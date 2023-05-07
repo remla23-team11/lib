@@ -1,0 +1,22 @@
+name: Update package version
+
+on:
+  create:
+    tags:
+      - 'v*'
+
+jobs:
+  update-semver:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.8'
+      - run: python update_semver.py ${{ github.ref }}
+      - run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "bump package.json version to ${{ github.ref }}"
+          git push
