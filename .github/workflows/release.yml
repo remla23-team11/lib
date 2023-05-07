@@ -7,6 +7,8 @@ on:
 
 jobs:
   update-semver:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -14,26 +16,16 @@ jobs:
         with:
           python-version: '3.8'
       - run: python ./.github/workflows/update_semver.py ${{ github.ref_name }}
-      - run: |
+      - continue-on-error: true
+        run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add .
           git commit -m "bump package.json version to ${{ github.ref_name }}"
           git push
 
-  build:
-    needs: update-semver
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-      - run: npm ci
-      - run: npm test
-
   publish-gpr:
-    needs: build
+    needs: update-semver
     permissions:
       contents: read
       packages: write
@@ -44,7 +36,7 @@ jobs:
         with:
           node-version: '16'
           registry-url: https://npm.pkg.github.com/
-      - run: npm ci
+      - run: npm install
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,7 +1,7 @@
 {
     "name": "@remla23-team11/lib",
     "description": "A version-aware library.",
-    "version": "0.0.1",
+    "version": "0.1.0-alpha.1",
     "repository": {
         "type": "git",
         "url": "https://github.com/remla23-team11/lib.git"
