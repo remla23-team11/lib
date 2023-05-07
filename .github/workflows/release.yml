@@ -16,7 +16,8 @@ jobs:
         with:
           python-version: '3.8'
       - run: python ./.github/workflows/update_semver.py ${{ github.ref_name }}
-      - run: |
+      - continue-on-error: true
+        run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add .
