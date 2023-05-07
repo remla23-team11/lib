@@ -4,9 +4,12 @@ import sys
 
 def main():
     semver = sys.argv[1]
-    with open('../../package.json', 'wt', encoding='utf-8') as f:
+    with open('./package.json', 'wt', encoding='utf-8') as f:
         j = json.load(f)
-        j['version'] = semver[1:]
+        oldver = j['version']
+        newver = semver[1:]
+        print(f'from {oldver} to {newver}')
+        j['version'] = newver
         json.dump(j, f, ensure_ascii=False, indent=4)
 
 

@@ -2,11 +2,27 @@ name: Release library
 
 on:
   push:
-    tags:
+    branches:
       - 'v*'
 
 jobs:
+  update-semver:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.8'
+      - run: python ./.github/workflows/update_semver.py ${{ github.ref_name }}
+      - run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .
+          git commit -m "bump package.json version to ${{ github.ref_name }}"
+          git push
+
   build:
+    needs: update-semver
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
