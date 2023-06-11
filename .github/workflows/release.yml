@@ -2,41 +2,41 @@ name: Release library
 
 on:
   push:
-    branches:
-      - 'v*'
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
-  update-semver:
+  update-publish:
     permissions:
       contents: write
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-python@v3
-        with:
-          python-version: '3.8'
-      - run: python ./.github/workflows/update_semver.py ${{ github.ref_name }}
-      - continue-on-error: true
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git add .
-          git commit -m "bump package.json version to ${{ github.ref_name }}"
-          git push
-
-  publish-gpr:
-    needs: update-semver
-    permissions:
-      contents: read
       packages: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - uses: actions/setup-node@v3
         with:
           node-version: '16'
           registry-url: https://npm.pkg.github.com/
+
+      - name: Parse version info from tag
+        run: |
+          # GITHUB_REF is like refs/tags/v2.3.5, so strip the first 11 chars
+          VERSION=${GITHUB_REF:11}
+          echo "version=$VERSION" >> $GITHUB_ENV
+
+      - run: npm --no-git-tag-version version ${{ env.version }}
+
+      - continue-on-error: true
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add ./package.json
+          git commit -m "bump package.json version to ${{ env.version }}"
+          git push
+
       - run: npm install
+
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
